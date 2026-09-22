@@ -2,6 +2,8 @@ import type { Repo } from './types/repo'
 import SearchBar from './components/SearchBar'
 import RepoCard from './components/RepoCard'
 import Layout from './components/Layout';
+import { useState } from 'react';
+import EmptyState from './components/EmptyState';
 
 
 const repoCards: Repo[] = [
@@ -47,14 +49,22 @@ const repoCards: Repo[] = [
 ];
 
 function App() {
+  const [filterText, setFilterText] = useState('');
+
+  const filteredRepos = repoCards
+    .filter(r => r.full_name.toLowerCase().includes(filterText));
+
   return (
     <Layout>
-        <SearchBar />
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-          {repoCards.map((repo) => (
+      <SearchBar onSearchChange={setFilterText} />
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+        {filteredRepos.length > 0 && repoCards
+          .filter(r => r.full_name.toLowerCase().includes(filterText))
+          .map((repo) => (
             <RepoCard key={repo.id} {...repo} />
           ))}
-        </div>
+        {filteredRepos.length <= 0 && <EmptyState />}
+      </div>
     </Layout>
   )
 }
