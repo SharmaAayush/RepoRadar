@@ -1,7 +1,7 @@
 import type { Repo } from './types/repo'
-import Header from './components/Header'
 import SearchBar from './components/SearchBar'
 import RepoCard from './components/RepoCard'
+import Layout from './components/Layout';
 
 
 const repoCards: Repo[] = [
@@ -13,6 +13,10 @@ const repoCards: Repo[] = [
     forks_count: 48000,
     language: "JavaScript",
     language_color_class: "bg-yellow-400",
+    // TODO Phase 8: replace with Zustand store action
+    onFavorite(id) {
+      console.log('favorite clicked:', id)
+    },
   },
   {
     id: 24195339,
@@ -22,6 +26,10 @@ const repoCards: Repo[] = [
     forks_count: 25000,
     language: "TypeScript",
     language_color_class: "bg-sky-500",
+    // TODO Phase 8: replace with Zustand store action
+    onFavorite(id) {
+      console.log('favorite clicked:', id)
+    },
   },
   {
     id: 11730342,
@@ -31,23 +39,23 @@ const repoCards: Repo[] = [
     forks_count: 36000,
     language: "TypeScript",
     language_color_class: "bg-sky-500",
+    // TODO Phase 8: replace with Zustand store action
+    onFavorite(id) {
+      console.log('favorite clicked:', id)
+    },
   },
 ];
 
 function App() {
-
   return (
-    <div className='min-w-screen flex flex-col min-h-screen'>
-      <Header />
-      <main className='w-full max-w-6xl mx-auto p-6 space-y-6'>
+    <Layout>
         <SearchBar />
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
           {repoCards.map((repo) => (
             <RepoCard key={repo.id} {...repo} />
           ))}
         </div>
-      </main>
-    </div>
+    </Layout>
   )
 }
 

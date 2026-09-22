@@ -6,4 +6,6 @@ export type Repo = {
   forks_count: number;
   language: string;
   language_color_class?: string;
+
+  onFavorite: (id: number) => void;
 }
