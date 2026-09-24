@@ -1,3 +1,4 @@
+import { LANGUAGE_COLOR_MAP } from "../consts/language-colors";
 import type { Repo } from "../types/repo";
 
 export default function RepoCard({
@@ -5,11 +6,11 @@ export default function RepoCard({
   full_name,
   description,
   language,
-  language_color_class,
   forks_count,
   stargazers_count,
   onFavorite,
 }: Repo) {
+  const language_color = (language && (LANGUAGE_COLOR_MAP as Record<string, string>)[language]) ?? LANGUAGE_COLOR_MAP.JavaScript;
   return (
     <div className="bg-[#161e2e] rounded-xl border border-slate-800/80 p-5 flex flex-col justify-between hover:border-slate-700/85 transition shadow-sm">
       <div className="space-y-2">
@@ -26,10 +27,12 @@ export default function RepoCard({
       </div>
       <div className="mt-6 pt-4 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
         <div className="flex items-center gap-1.5">
-          {language_color_class && (
-            <span className={`w-2.5 h-2.5 rounded-full ${language_color_class} inline-block`}></span>
-          )}
-          <span>{language}</span>
+          {language && <>
+            {language_color && (
+              <span className={`w-2.5 h-2.5 rounded-full inline-block`} style={{ backgroundColor: language_color }}></span>
+            )}
+            <span>{language}</span>
+          </>}
         </div>
         <div className="flex items-center gap-3">
           <span className="flex items-center gap-1"><span className="text-yellow-500">★</span> {stargazers_count}</span>
