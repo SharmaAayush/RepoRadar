@@ -1,11 +1,14 @@
+import APP_CONFIG from "../config/app.config";
 import type { GitHubRepository, ListRepositoriesForUserResponse } from "../types/github-api-response";
 
 export interface TypedResponse<T> extends Response {
   json(): Promise<T>;
 }
 
-export async function getUserRepos(userName: string, sortBy = 'stars', perPage = 10): Promise<TypedResponse<ListRepositoriesForUserResponse>> {
-  return await fetch(`https://api.github.com/users/${userName}/repos?sort=${sortBy}&per_page=${perPage}`);
+
+// API Endpoint documentation: https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10#list-repositories-for-a-user
+export async function getUserRepos(userName: string, page = 1, sortBy = 'stars'): Promise<TypedResponse<ListRepositoriesForUserResponse>> {
+  return await fetch(`https://api.github.com/users/${userName}/repos?sort=${sortBy}&per_page=${APP_CONFIG.REPOS_PER_PAGE}&page=${page}`);
 }
 
 export async function getRepoDetails(userName: string, repoName: string): Promise<TypedResponse<GitHubRepository>> {

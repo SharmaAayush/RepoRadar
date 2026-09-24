@@ -2,7 +2,7 @@ import type { Repo } from './types/repo'
 import SearchBar from './components/SearchBar'
 import RepoCard from './components/RepoCard'
 import Layout from './components/Layout';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import EmptyState from './components/EmptyState';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBanner from './components/ErrorBanner';
@@ -12,23 +12,68 @@ import { getRepoDetails, getUserRepos } from './helpers/github.api';
 
 function App() {
   const [submittedUsername, setSubmittedUsername] = useState('');
+  const [page, setPage] = useState(1);
   const [repos, setRepos] = useState<Repo[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [hasMore, setHasMore] = useState(false);
 
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Set intersection observer for infinite scroll tracking
   useEffect(() => {
-    (async () => {
-      if (submittedUsername) {
+    const callback: IntersectionObserverCallback = ([entry]) => {
+      if (entry.isIntersecting) {
+        console.log('Scrolled to bottom');
+        if (hasMore) {
+          console.log('LOAD MORE');
+          setPage(prevPage => prevPage + 1);
+        } else {
+          console.log('NO MORE REPOS');
+        }
+      }
+    };
+    const options = {
+      root: null,         // Use the browser viewport
+      rootMargin: '0px',  // No offset margin
+      threshold: 0.1,     // Trigger when 10% of the element is visible
+    };
+    const observer = new IntersectionObserver(callback, options);
+    const currentTarget = sentinelRef.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    }
+  }, [hasMore]);
+
+  // On submittedUsername update, reset page, repos, and hasMore
+  useEffect(() => {
+    (() => {
+      setPage(1);
+      setRepos([]);
+      setHasMore(false);
+    })();
+  }, [submittedUsername]);
+
+  // Fetch user repos on submittedUsername or page change
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    if (submittedUsername && page) {
+      timeout = setTimeout(async () => {
         setStatus('loading');
 
         try {
-          // API Endpoint documentation: https://docs.github.com/en/rest/repos/repos?apiVersion=2026-03-10#list-repositories-for-a-user
-          const resultPromise = await getUserRepos(submittedUsername);
+          const resultPromise = await getUserRepos(submittedUsername, page);
           if (!resultPromise.ok) {
             setErrorMessage('User not found — check the username and try again.');
             throw resultPromise.status;
           }
           const result: ListRepositoriesForUserResponse = await resultPromise.json();
+          setHasMore(result.length === APP_CONFIG.REPOS_PER_PAGE);
           const repos = result.map((repo) => {
             const typedRepo: Repo = {
               id: repo.id,
@@ -44,7 +89,7 @@ function App() {
             };
             return typedRepo;
           });
-          setRepos(repos);
+          setRepos(prevRepos => [...prevRepos, ...repos]);
           console.log(result);
           setStatus('success');
         } catch (error) {
@@ -56,10 +101,17 @@ function App() {
             setErrorMessage('Rate limited by GitHub — try again after some time.');
           }
         }
-      }
-    })();
-  }, [submittedUsername]);
+      }, 50);
+    }
 
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+  }, [submittedUsername, page])
+
+  // Setup polling to update stars and forks count for all repos if polling is enabled
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
     if (APP_CONFIG.ENABLE_REPO_POLLING && repos.length > 0) {
@@ -89,26 +141,29 @@ function App() {
         clearInterval(interval);
       }
     }
-  }, [repos])
-
-  const filteredRepos = repos;
+  }, [repos, submittedUsername])
 
   let mainContent;
-  switch (status) {
-    case 'loading':
+  switch (true) {
+    case status === 'loading' && repos.length === 0:
       mainContent = <LoadingSpinner />
       break;
-    case 'error':
+    case status === 'error':
       mainContent = <ErrorBanner message={errorMessage} />
       break;
     default:
-      if (filteredRepos.length > 0) {
-        mainContent = <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-          {filteredRepos
-            .map((repo) => (
-              <RepoCard key={repo.id} {...repo} />
-            ))}
-        </div>;
+      if (repos.length > 0) {
+        mainContent = <>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+            {repos
+              .map((repo) => (
+                <RepoCard key={repo.id} {...repo} />
+              ))}
+          </div>
+          {status === 'loading' && <LoadingSpinner />}
+          {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
+          {!hasMore && <EmptyState message='No more repos' />}
+        </>;
       } else {
         mainContent = <EmptyState />;
       }

@@ -1,4 +1,4 @@
-import { useState, type SubmitEvent } from "react"
+import { useEffect, useRef, useState, type SubmitEvent } from "react"
 
 type SearchBarProps = {
   onSubmit: (value: string) => void,
@@ -6,6 +6,11 @@ type SearchBarProps = {
 
 export default function SearchBar({onSubmit}: SearchBarProps) {
   const [value, setValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [])
 
   function handleSubmit(e: SubmitEvent) {
     // prevent form submission to prevent redirect
@@ -16,6 +21,7 @@ export default function SearchBar({onSubmit}: SearchBarProps) {
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-4">
       <input
+        ref={inputRef}
         value={value}
         onChange={(e) => {setValue(e.target.value);}}
         type="text"
