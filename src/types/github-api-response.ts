@@ -119,6 +119,34 @@ export interface GitHubRepository {
   [key: string]: unknown;
 }
 
+export type GetRepositoryLanguagesResponse = Record<string, number>;
+
+export interface GitHubFileContentLink {
+  self: string;
+  git: string;
+  html: string;
+  [key: string]: string;
+}
+
+/**
+ * Response type for: Get a repository README
+ */
+export interface GetRepositoryReadmeResponse {
+  name: string;
+  path: string;
+  sha: string;
+  size: number;
+  url: string;
+  html_url: string;
+  git_url: string | null;
+  download_url: string | null;
+  type: string; // e.g., "file"
+  content: string; // Base64 encoded content
+  encoding: string; // e.g., "base64"
+  _links: GitHubFileContentLink;
+  [key: string]: unknown;
+}
+
 /**
  * Response type for: List repositories for a user
  * Returns an array of repositories.

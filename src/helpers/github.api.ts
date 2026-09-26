@@ -1,5 +1,5 @@
 import APP_CONFIG from "../config/app.config";
-import type { GitHubRepository, ListRepositoriesForUserResponse } from "../types/github-api-response";
+import type { GetRepositoryLanguagesResponse, GetRepositoryReadmeResponse, GitHubRepository, ListRepositoriesForUserResponse } from "../types/github-api-response";
 
 export interface TypedResponse<T> extends Response {
   json(): Promise<T>;
@@ -13,4 +13,12 @@ export async function getUserRepos(userName: string, page = 1, sortBy = 'stars')
 
 export async function getRepoDetails(userName: string, repoName: string): Promise<TypedResponse<GitHubRepository>> {
   return await fetch(`https://api.github.com/repos/${userName}/${repoName}`);
+}
+
+export async function getRepoLanguages(userName: string, repoName: string): Promise<TypedResponse<GetRepositoryLanguagesResponse>> {
+  return await fetch(`https://api.github.com/repos/${userName}/${repoName}/languages`);
+}
+
+export async function getRepoReadme(userName: string, repoName: string): Promise<TypedResponse<GetRepositoryReadmeResponse>> {
+  return await fetch(`https://api.github.com/repos/${userName}/${repoName}/readme`);
 }

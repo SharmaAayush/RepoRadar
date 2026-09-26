@@ -1,179 +1,19 @@
-import type { Repo } from './types/repo'
-import SearchBar from './components/SearchBar'
-import RepoCard from './components/RepoCard'
 import Layout from './components/Layout';
-import { useEffect, useRef, useState } from 'react';
-import EmptyState from './components/EmptyState';
-import LoadingSpinner from './components/LoadingSpinner';
-import ErrorBanner from './components/ErrorBanner';
-import type { ListRepositoriesForUserResponse } from './types/github-api-response';
-import APP_CONFIG from './config/app.config';
-import { getRepoDetails, getUserRepos } from './helpers/github.api';
+import { Route, Routes } from 'react-router';
+import HomePage from './pages/HomePage';
+import RepoDetailPage from './pages/RepoDetailPage';
+import ComparePage from './pages/ComparePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
-  const [submittedUsername, setSubmittedUsername] = useState('');
-  const [page, setPage] = useState(1);
-  const [repos, setRepos] = useState<Repo[]>([]);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [hasMore, setHasMore] = useState(false);
-
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  // Set intersection observer for infinite scroll tracking
-  useEffect(() => {
-    const callback: IntersectionObserverCallback = ([entry]) => {
-      if (entry.isIntersecting) {
-        console.log('Scrolled to bottom');
-        if (hasMore) {
-          console.log('LOAD MORE');
-          setPage(prevPage => prevPage + 1);
-        } else {
-          console.log('NO MORE REPOS');
-        }
-      }
-    };
-    const options = {
-      root: null,         // Use the browser viewport
-      rootMargin: '0px',  // No offset margin
-      threshold: 0.1,     // Trigger when 10% of the element is visible
-    };
-    const observer = new IntersectionObserver(callback, options);
-    const currentTarget = sentinelRef.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    }
-  }, [hasMore]);
-
-  // On submittedUsername update, reset page, repos, and hasMore
-  useEffect(() => {
-    (() => {
-      setPage(1);
-      setRepos([]);
-      setHasMore(false);
-    })();
-  }, [submittedUsername]);
-
-  // Fetch user repos on submittedUsername or page change
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout> | undefined;
-    if (submittedUsername && page) {
-      timeout = setTimeout(async () => {
-        setStatus('loading');
-
-        try {
-          const resultPromise = await getUserRepos(submittedUsername, page);
-          if (!resultPromise.ok) {
-            setErrorMessage('User not found — check the username and try again.');
-            throw resultPromise.status;
-          }
-          const result: ListRepositoriesForUserResponse = await resultPromise.json();
-          setHasMore(result.length === APP_CONFIG.REPOS_PER_PAGE);
-          const repos = result.map((repo) => {
-            const typedRepo: Repo = {
-              id: repo.id,
-              full_name: repo.name,
-              description: repo.description,
-              stargazers_count: repo.stargazers_count,
-              forks_count: repo.forks_count,
-              language: repo.language,
-              // TODO Phase 8: replace with Zustand store action
-              onFavorite(id) {
-                console.log('favorite clicked:', id)
-              },
-            };
-            return typedRepo;
-          });
-          setRepos(prevRepos => [...prevRepos, ...repos]);
-          console.log(result);
-          setStatus('success');
-        } catch (error) {
-          setStatus('error');
-          if (error === 404) {
-            setErrorMessage('User not found — check the username and try again.');
-          }
-          if (error === 403) {
-            setErrorMessage('Rate limited by GitHub — try again after some time.');
-          }
-        }
-      }, 50);
-    }
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    }
-  }, [submittedUsername, page])
-
-  // Setup polling to update stars and forks count for all repos if polling is enabled
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | undefined;
-    if (APP_CONFIG.ENABLE_REPO_POLLING && repos.length > 0) {
-      interval = setInterval(async () => {
-        try {
-          const resultPromises = repos.map(repo => getRepoDetails(submittedUsername, repo.full_name));
-          const results = await Promise.all(resultPromises);
-          const jsonResultPromises = results.map(res => res.json());
-          const jsonResults = await Promise.all(jsonResultPromises);
-          const updatedRepos = [...repos];
-          jsonResults.forEach(res => {
-            const repo = updatedRepos.find(repo => repo.id === res.id);
-            if (repo) {
-              repo.stargazers_count = res.stargazers_count;
-              repo.forks_count = res.forks_count;
-            }
-          });
-          setRepos(updatedRepos);
-        } catch (error) {
-          // just log the error
-          console.log(error);
-        }
-      }, 60 * 1000);
-    }
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    }
-  }, [repos, submittedUsername])
-
-  let mainContent;
-  switch (true) {
-    case status === 'loading' && repos.length === 0:
-      mainContent = <LoadingSpinner />
-      break;
-    case status === 'error':
-      mainContent = <ErrorBanner message={errorMessage} />
-      break;
-    default:
-      if (repos.length > 0) {
-        mainContent = <>
-          <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {repos
-              .map((repo) => (
-                <RepoCard key={repo.id} {...repo} />
-              ))}
-          </div>
-          {status === 'loading' && <LoadingSpinner />}
-          {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
-          {!hasMore && <EmptyState message='No more repos' />}
-        </>;
-      } else {
-        mainContent = <EmptyState />;
-      }
-      break;
-  }
-
   return (
     <Layout>
-      <SearchBar onSubmit={setSubmittedUsername} />
-      {mainContent}
+      <Routes>
+        <Route index element={<HomePage />} />
+        <Route path='/repo/:owner/:name' element={<RepoDetailPage />} />
+        <Route path='/compare' element={<ComparePage />} />
+        <Route path='*' element={<NotFoundPage />} />
+      </Routes>
     </Layout>
   )
 }
