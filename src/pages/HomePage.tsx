@@ -23,12 +23,8 @@ export default function HomePage() {
   useEffect(() => {
     const callback: IntersectionObserverCallback = ([entry]) => {
       if (entry.isIntersecting) {
-        console.log('Scrolled to bottom');
         if (hasMore) {
-          console.log('LOAD MORE');
           setPage(prevPage => prevPage + 1);
-        } else {
-          console.log('NO MORE REPOS');
         }
       }
     };
@@ -88,7 +84,6 @@ export default function HomePage() {
             return typedRepo;
           });
           setRepos(prevRepos => [...prevRepos, ...repos]);
-          console.log(result);
           setStatus('success');
         } catch (error) {
           setStatus('error');
