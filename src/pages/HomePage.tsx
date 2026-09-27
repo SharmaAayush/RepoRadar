@@ -16,6 +16,7 @@ export default function HomePage() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [hasMore, setHasMore] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -76,10 +77,6 @@ export default function HomePage() {
               stargazers_count: repo.stargazers_count,
               forks_count: repo.forks_count,
               language: repo.language,
-              // TODO Phase 8: replace with Zustand store action
-              onFavorite(id) {
-                console.log('favorite clicked:', id)
-              },
             };
             return typedRepo;
           });
@@ -150,7 +147,24 @@ export default function HomePage() {
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
             {repos
               .map((repo) => (
-                <RepoCard key={repo.id} {...repo} />
+                <RepoCard
+                  key={repo.id}
+                  // TODO Phase 8: replace with Zustand store action
+                  onFavorite={(id) => {
+                    console.log('favorite clicked:', id);
+                  }}
+                  onSelectionChange={(fullName, checked) => {
+                    setSelected(prevSelected => {
+                      if (!checked) {
+                        return prevSelected.filter(selected => selected !== fullName);
+                      } else {
+                        return [...prevSelected, fullName];
+                      }
+                    });
+                  }}
+                  selected={selected}
+                  {...repo}
+                />
               ))}
           </div>
           {status === 'loading' && <LoadingSpinner />}
@@ -165,7 +179,7 @@ export default function HomePage() {
 
   return (
     <>
-      <SearchBar onSubmit={setSubmittedUsername} />
+      <SearchBar onSubmit={setSubmittedUsername} selected={selected} onClearSelection={() => setSelected([])} />
       {mainContent}
     </>
   )

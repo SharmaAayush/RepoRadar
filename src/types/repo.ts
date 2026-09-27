@@ -5,6 +5,11 @@ export type Repo = {
   stargazers_count: number;
   forks_count: number;
   language: string | null;
+}
+
+export type RepoCardProps = Repo & {
+  selected: string[];
 
   onFavorite: (id: number) => void;
+  onSelectionChange: (fullName: string, checked: boolean) => void;
 }
