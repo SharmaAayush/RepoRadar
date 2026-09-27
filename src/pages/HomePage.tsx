@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import EmptyState from "../components/EmptyState";
 import ErrorBanner from "../components/ErrorBanner";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -8,6 +8,7 @@ import APP_CONFIG from "../config/app.config";
 import { getRepoDetails, getUserRepos } from "../helpers/github.api";
 import type { ListRepositoriesForUserResponse } from "../types/github-api-response";
 import type { Repo } from "../types/repo";
+import type { FilterValues } from "../components/FilterForm";
 
 export default function HomePage() {
   const [submittedUsername, setSubmittedUsername] = useState('');
@@ -17,6 +18,12 @@ export default function HomePage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [hasMore, setHasMore] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
+
+  const [filters, setFilters] = useState<FilterValues>({
+    minStars: 0,
+    language: 'All',
+    sortBy: 'stars',
+  });
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +59,7 @@ export default function HomePage() {
       setPage(1);
       setRepos([]);
       setHasMore(false);
+      setFilters({ minStars: 0, language: 'All', sortBy: 'stars' });
     })();
   }, [submittedUsername]);
 
@@ -131,7 +139,27 @@ export default function HomePage() {
         clearInterval(interval);
       }
     }
-  }, [repos, submittedUsername])
+  }, [repos, submittedUsername]);
+
+  const displayedRepos = useMemo(() => {
+    return repos
+      .filter((repo) => {
+        const matchesStars = (repo.stargazers_count ?? 0) >= filters.minStars;
+        const matchesLanguage = filters.language === 'All' || repo.language === filters.language;
+        return matchesStars && matchesLanguage;
+      })
+      .sort((a, b) => {
+        if (filters.sortBy === 'forks') {
+          return (b.forks_count ?? 0) - (a.forks_count ?? 0);
+        }
+        if (filters.sortBy === 'updated') {
+          // Fallback parsing placeholder logic for date structures if integrated later
+          return b.id - a.id; 
+        }
+        // Default default sort sequence: Highest Stars (Descending)
+        return (b.stargazers_count ?? 0) - (a.stargazers_count ?? 0);
+      });
+  }, [repos, filters]);
 
   let mainContent;
   switch (true) {
@@ -142,10 +170,10 @@ export default function HomePage() {
       mainContent = <ErrorBanner message={errorMessage} />
       break;
     default:
-      if (repos.length > 0) {
+      if (displayedRepos.length > 0) {
         mainContent = <>
           <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-            {repos
+            {displayedRepos
               .map((repo) => (
                 <RepoCard
                   key={repo.id}
@@ -169,17 +197,23 @@ export default function HomePage() {
           </div>
           {status === 'loading' && <LoadingSpinner />}
           {hasMore && <div ref={sentinelRef} style={{ height: 1 }} />}
-          {!hasMore && <EmptyState message='No more repos' />}
+          {!hasMore && repos.length > 0 && <EmptyState message='No more repos' />}
         </>;
       } else {
-        mainContent = <EmptyState />;
+        mainContent = <EmptyState message="No repositories match the chosen filter configuration." />;
       }
       break;
   }
 
   return (
     <>
-      <SearchBar onSubmit={setSubmittedUsername} selected={selected} onClearSelection={() => setSelected([])} />
+      <SearchBar
+        onSubmit={setSubmittedUsername}
+        selected={selected}
+        onClearSelection={() => setSelected([])}
+        loadedRepos={repos}
+        onApplyFilters={setFilters}
+      />
       {mainContent}
     </>
   )
