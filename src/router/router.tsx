@@ -9,7 +9,8 @@ import NotFoundPage from "../pages/NotFoundPage";
 import Layout from "../layouts/Layout";
 import { repoLoader } from "../loaders/repoLoader";
 import RepoDetailLayout from "../layouts/RepoDetailLayout";
-import RepoErrorPage from "../pages/RepoErrorPage";
+import ErrorPage from "../pages/ErrorPage";
+import { favoritesLoader } from "../loaders/favoritesLoader";
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +27,7 @@ export const router = createBrowserRouter([
             path: '/repo/:owner/:name',
             element: <RepoDetailPage />,
             loader: repoLoader,
-            errorElement: <RepoErrorPage />,
+            errorElement: <ErrorPage />,
           },
         ],
       },
@@ -40,7 +41,9 @@ export const router = createBrowserRouter([
       },
       {
         path: '/favorites',
-        element: <ProtectedRoute><FavoritesPage /></ProtectedRoute>
+        element: <ProtectedRoute><FavoritesPage /></ProtectedRoute>,
+        loader: favoritesLoader,
+        errorElement: <ErrorPage />,
       },
       {
         path: '*',

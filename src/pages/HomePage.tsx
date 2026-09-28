@@ -177,10 +177,6 @@ export default function HomePage() {
               .map((repo) => (
                 <RepoCard
                   key={repo.id}
-                  // TODO Phase 8: replace with Zustand store action
-                  onFavorite={(id) => {
-                    console.log('favorite clicked:', id);
-                  }}
                   onSelectionChange={(fullName, checked) => {
                     setSelected(prevSelected => {
                       if (!checked) {

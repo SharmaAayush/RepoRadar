@@ -8,8 +8,7 @@ export type Repo = {
 }
 
 export type RepoCardProps = Repo & {
-  selected: string[];
+  selected?: string[];
 
-  onFavorite: (id: number) => void;
-  onSelectionChange: (fullName: string, checked: boolean) => void;
+  onSelectionChange?: (fullName: string, checked: boolean) => void;
 }
