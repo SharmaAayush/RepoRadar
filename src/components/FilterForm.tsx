@@ -4,15 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { RotateCcw } from 'lucide-react';
 import type { Repo } from '../types/repo';
-
-// Unified schema definition export
-export const filterSchema = z.object({
-  minStars: z.coerce.number().min(0, 'Min stars must be 0 or greater'),
-  language: z.string(),
-  sortBy: z.enum(['stars', 'forks', 'updated']),
-});
-
-export type FilterValues = z.infer<typeof filterSchema>;
+import { filterSchema, type FilterValues } from '../helpers/filter.helper';
 
 interface FilterFormProps {
   loadedRepos: Repo[];
@@ -35,7 +27,7 @@ export default function FilterForm({ loadedRepos, currentFilters, onApply, onRes
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FilterValues>({
+  } = useForm<z.input<typeof filterSchema>, unknown, FilterValues>({
     resolver: zodResolver(filterSchema),
     defaultValues: currentFilters,
   });

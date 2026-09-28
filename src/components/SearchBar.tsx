@@ -2,8 +2,8 @@ import { BarChart2, Filter, SlidersHorizontal, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type MouseEvent as RMouseEvent, type SubmitEvent } from "react"
 import { useNavigate } from "react-router";
 import type { Repo } from "../types/repo";
-import type { FilterValues } from "./FilterForm";
 import FilterForm from "./FilterForm";
+import type { FilterValues } from "../helpers/filter.helper";
 
 type SearchBarProps = {
   onSubmit: (value: string) => void,

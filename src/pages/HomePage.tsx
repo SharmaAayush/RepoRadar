@@ -8,7 +8,7 @@ import APP_CONFIG from "../config/app.config";
 import { getRepoDetails, getUserRepos } from "../helpers/github.api";
 import type { ListRepositoriesForUserResponse } from "../types/github-api-response";
 import type { Repo } from "../types/repo";
-import type { FilterValues } from "../components/FilterForm";
+import type { FilterValues } from "../helpers/filter.helper";
 
 export default function HomePage() {
   const [submittedUsername, setSubmittedUsername] = useState('');
