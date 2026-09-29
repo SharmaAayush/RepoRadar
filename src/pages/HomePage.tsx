@@ -94,9 +94,10 @@ export default function HomePage() {
           setStatus('error');
           if (error === 404) {
             setErrorMessage('User not found — check the username and try again.');
-          }
-          if (error === 403) {
+          } else if (error === 403) {
             setErrorMessage('Rate limited by GitHub — try again after some time.');
+          } else if (error === 401) {
+            setErrorMessage('Unauthorized error — try removing GitHub token if set.')
           }
         }
       }, 50);

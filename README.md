@@ -76,15 +76,16 @@ src/
 - `npm run preview` - Preview the production build locally
 - `npm run lint` - Run ESLint for code quality checks
 
-## Environment Variables
+## GitHub Token
 
-Create a `.env` file in the root directory with the following variables:
+To increase API rate limits (from 60 to 5,000 requests/hour), you can provide a GitHub Personal Access Token:
 
-```env
-VITE_GITHUB_TOKEN=your_github_personal_access_token
-```
+1. Open the app
+2. Click the token input field in the header (right side)
+3. Enter your GitHub Personal Access Token
+4. The token is saved locally in browser storage and reused automatically
 
-Note: A GitHub token is recommended to avoid rate limiting when making API requests.
+The token is only visible to you in the browser and is cleared if you remove it from the input field.
 
 ## Docker Deployment
 

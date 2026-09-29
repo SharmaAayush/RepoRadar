@@ -9,6 +9,8 @@ export default function ErrorPage() {
     errorMessage = 'Repo not found — check the username and repo name and try again.';
   } else if (error === 403) {
     errorMessage = 'Rate limited by GitHub — try again after some time.';
+  } else if (error === 401) {
+    errorMessage = 'Unauthorized error — try removing GitHub token if set.';
   } else if (typeof error === 'string') {
     errorMessage = error;
   } else {
