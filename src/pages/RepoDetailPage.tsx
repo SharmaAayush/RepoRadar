@@ -21,24 +21,24 @@ export default function RepoDetailPage() {
 
   return (<div className="space-y-3">
     {/* Repository Header */}
-    <h1 className="text-2xl font-semibold tracking-wide text-[#f0f6fc]">
+    <h1 className="text-2xl font-semibold tracking-wide text-[var(--text-primary)]">
       {owner}/<span className="font-bold">{name}</span>
     </h1>
 
     {/* Repository Stats */}
-    <div className="flex flex-wrap items-center gap-6 text-sm text-[#8b949e]">
-      <div className="flex items-center gap-1.5 hover:text-[#58a6ff] cursor-pointer transition">
-        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-        <span className="font-medium text-[#f0f6fc]">{repo?.stargazers_count}</span>
+    <div className="flex flex-wrap items-center gap-6 text-sm text-[var(--text-secondary)]">
+      <div className="flex items-center gap-1.5 hover:text-[var(--accent)] cursor-pointer transition">
+        <Star className="w-4 h-4 text-[var(--yellow)] fill-[var(--yellow)]" />
+        <span className="font-medium text-[var(--text-primary)]">{repo?.stargazers_count}</span>
       </div>
-      <div className="flex items-center gap-1.5 hover:text-[#58a6ff] cursor-pointer transition">
-        <GitFork className="w-4 h-4 text-slate-500" />
-        <span className="font-medium text-[#f0f6fc]">{repo?.forks_count}</span>
+      <div className="flex items-center gap-1.5 hover:text-[var(--accent)] cursor-pointer transition">
+        <GitFork className="w-4 h-4 text-[var(--text-secondary)]" />
+        <span className="font-medium text-[var(--text-primary)]">{repo?.forks_count}</span>
       </div>
-      <div className="flex items-center gap-1.5 hover:text-[#f85149] cursor-pointer transition">
+      <div className="flex items-center gap-1.5 hover:text-[var(--red)] cursor-pointer transition">
         <AlertCircle className="w-4 h-4" />
         <span>Open issues:</span>
-        <span className="font-medium text-[#f0f6fc]">{repo?.open_issues_count}</span>
+        <span className="font-medium text-[var(--text-primary)]">{repo?.open_issues_count}</span>
       </div>
     </div>
 
@@ -47,14 +47,14 @@ export default function RepoDetailPage() {
 
       {/* Languages Card */}
       {languages &&
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 hover:border-[#8b949e] transition-colors duration-200 flex flex-col justify-between">
+        <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl p-6 hover:border-[var(--text-secondary)] transition-colors duration-200 flex flex-col justify-between">
           <div>
-            <h2 className="text-base font-semibold text-[#f0f6fc] mb-4">
+            <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4">
               Languages
             </h2>
 
             {/* Multi-colored Progress Bar */}
-            <div className="w-full h-2 rounded-full overflow-hidden flex bg-[#30363d]">
+            <div className="w-full h-2 rounded-full overflow-hidden flex bg-[var(--border)]">
               {languagesMap.map(language => {
                 return <div
                   key={language.name}
@@ -64,27 +64,27 @@ export default function RepoDetailPage() {
                 />
               })}
             </div>
-          </div>
 
-          {/* Language Legends */}
-          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs font-medium">
-            {languagesMap.map(language => {
-              return <div key={language.name} className="flex items-center gap-2">
-                <span className={`w-2.5 h-2.5 rounded-full bg-[${language.color}]`} style={{ backgroundColor: language.color }} />
-                <span className="text-[#f0f6fc]">{language.name} <span className="text-[#8b949e] font-normal">{language.percentage}%</span></span>
-              </div>
-            })}
+            {/* Language Legends */}
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs font-medium">
+              {languagesMap.map(language => {
+                return <div key={language.name} className="flex items-center gap-2">
+                  <span className={`w-2.5 h-2.5 rounded-full bg-[${language.color}]`} style={{ backgroundColor: language.color }} />
+                  <span className="text-[var(--text-primary)]">{language.name} <span className="text-[var(--text-secondary)] font-normal">{language.percentage}%</span></span>
+                </div>
+              })}
+            </div>
           </div>
         </div>
       }
 
       {/* README Card */}
       {readme &&
-        <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6 hover:border-[#8b949e] transition-colors duration-200">
-          <h2 className="text-base font-semibold text-[#f0f6fc] mb-3">
+        <div className="bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl p-6 hover:border-[var(--text-secondary)] transition-colors duration-200">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-3">
             README.md
           </h2>
-          <article className="text-sm leading-relaxed text-[#8b949e] antialiased prose dark:prose-invert max-w-none">
+          <article className="text-sm leading-relaxed text-[var(--text-secondary)] antialiased prose dark:prose-invert max-w-none">
             <Markdown>{readme}</Markdown>
           </article>
         </div>

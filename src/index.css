@@ -1,2 +1,315 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+:root {
+  /* Light theme (default) - GitHub Light inspired */
+  --bg: #f6f8fa;
+  --bg-elevated: #ffffff;
+  --bg-elevated-2: #f6f8fa;
+  --bg-elevated-3: #ffffff;
+  --bg-elevated-4: #ffffff;
+  --bg-elevated-5: #f6f8fa;
+  --bg-elevated-6: #e4ebf2;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+  --border: #d0d7de;
+  --border-strong: #c4c9ce;
+  --border-accent: #0969da;
+  --text-primary: #1f2328;
+  --text-secondary: #656d76;
+  --text-muted: #484f58;
+  --text-link: #0969da;
+  --accent: #0969da;
+  --accent-hover: #0b5fd4;
+  --accent-subtle: rgba(9, 105, 218, 0.1);
+  --accent-subtle-2: rgba(9, 105, 218, 0.05);
+  --green: #1a7f37;
+  --green-hover: #2da043;
+  --green-subtle: rgba(26, 127, 55, 0.1);
+  --red: #cf222e;
+  --red-hover: #da3633;
+  --red-subtle: rgba(207, 34, 46, 0.1);
+  --yellow: #dbab09;
+  --yellow-subtle: rgba(219, 171, 9, 0.1);
+  --shadow-sm: 0 1px 2px rgba(27, 31, 35, 0.04);
+  --shadow: 0 4px 12px rgba(27, 31, 35, 0.08);
+  --shadow-lg: 0 12px 40px rgba(27, 31, 35, 0.12);
+  --shadow-glow: 0 0 8px rgba(9, 105, 218, 0.3);
+  --shadow-red-glow: 0 0 8px rgba(207, 34, 46, 0.3);
+  --shadow-green-glow: 0 0 8px rgba(26, 127, 55, 0.3);
+}
+
+.dark {
+  /* Dark theme - GitHub Dark inspired */
+  --bg: #0d1117;
+  --bg-elevated: #161b22;
+  --bg-elevated-2: #161e2e;
+  --bg-elevated-3: #1e293b;
+  --bg-elevated-4: #111827;
+  --bg-elevated-5: #21262d;
+  --bg-elevated-6: #253347;
+  --bg-overlay: rgba(22, 27, 34, 0.9);
+  --border: #30363d;
+  --border-strong: #484f58;
+  --border-accent: #58a6ff;
+  --text-primary: #f0f6fc;
+  --text-secondary: #8b949e;
+  --text-muted: #c9d1d9;
+  --text-link: #58a6ff;
+  --accent: #58a6ff;
+  --accent-hover: #4a90e2;
+  --accent-subtle: rgba(88, 166, 255, 0.1);
+  --accent-subtle-2: rgba(88, 166, 255, 0.05);
+  --green: #238636;
+  --green-hover: #2ea043;
+  --green-subtle: rgba(35, 134, 54, 0.1);
+  --red: #f85149;
+  --red-hover: #f97583;
+  --red-subtle: rgba(248, 81, 73, 0.1);
+  --yellow: #f1e05a;
+  --yellow-subtle: rgba(241, 224, 90, 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 8px rgba(88, 166, 255, 0.3);
+  --shadow-red-glow: 0 0 8px rgba(248, 81, 73, 0.3);
+  --shadow-green-glow: 0 0 8px rgba(35, 134, 54, 0.3);
+}
+
+/* Base styles */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--accent-subtle);
+  color: var(--text-primary);
+}
+
+/* Prose overrides for react-markdown */
+.prose {
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-muted);
+  --tw-prose-bullets: var(--text-muted);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--text-primary);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--text-muted);
+  --tw-prose-kbd: var(--text-primary);
+  --tw-prose-kbd-shadows: var(--bg-elevated-5);
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-muted);
+  --tw-prose-pre-bg: var(--bg-elevated-5);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+.dark .prose {
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--accent);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-muted);
+  --tw-prose-bullets: var(--text-muted);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--text-primary);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--text-muted);
+  --tw-prose-kbd: var(--text-primary);
+  --tw-prose-kbd-shadows: var(--bg-elevated-5);
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-muted);
+  --tw-prose-pre-bg: var(--bg-elevated-5);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+/* Utility classes for common patterns */
+.bg-theme {
+  background-color: var(--bg);
+}
+
+.bg-elevated {
+  background-color: var(--bg-elevated);
+}
+
+.bg-elevated-2 {
+  background-color: var(--bg-elevated-2);
+}
+
+.bg-elevated-3 {
+  background-color: var(--bg-elevated-3);
+}
+
+.bg-elevated-4 {
+  background-color: var(--bg-elevated-4);
+}
+
+.bg-elevated-5 {
+  background-color: var(--bg-elevated-5);
+}
+
+.bg-elevated-6 {
+  background-color: var(--bg-elevated-6);
+}
+
+.bg-overlay {
+  background-color: var(--bg-overlay);
+}
+
+.border-theme {
+  border-color: var(--border);
+}
+
+.border-theme-strong {
+  border-color: var(--border-strong);
+}
+
+.text-theme-primary {
+  color: var(--text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--text-muted);
+}
+
+.text-theme-link {
+  color: var(--text-link);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-green {
+  color: var(--green);
+}
+
+.text-red {
+  color: var(--red);
+}
+
+.text-yellow {
+  color: var(--yellow);
+}
+
+.hover\:bg-elevated-6:hover {
+  background-color: var(--bg-elevated-6);
+}
+
+.hover\:text-accent:hover {
+  color: var(--accent);
+}
+
+.hover\:text-theme-secondary:hover {
+  color: var(--text-secondary);
+}
+
+.hover\:border-theme-strong:hover {
+  border-color: var(--border-strong);
+}
+
+.focus\:border-accent:focus {
+  border-color: var(--accent);
+}
+
+.focus\:ring-accent:focus {
+  --tw-ring-color: var(--accent);
+}
+
+/* Animation for fade-in */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.15s ease-out;
+}
+
+/* Ping animation for logo */
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.animate-ping {
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Pulse animation for logo */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Spin animation for loading */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

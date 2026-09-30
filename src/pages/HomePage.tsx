@@ -121,8 +121,8 @@ export default function HomePage() {
           const jsonResultPromises = results.map(res => res.json());
           const jsonResults = await Promise.all(jsonResultPromises);
           const updatedRepos = [...repos];
-          jsonResults.forEach(res => {
-            const repo = updatedRepos.find(repo => repo.id === res.id);
+          jsonResults.forEach((res, index) => {
+            const repo = updatedRepos[index];
             if (repo) {
               repo.stargazers_count = res.stargazers_count;
               repo.forks_count = res.forks_count;
@@ -137,7 +137,7 @@ export default function HomePage() {
     }
     return () => {
       if (interval) {
-        clearInterval(interval);
+        clearTimeout(interval);
       }
     }
   }, [repos, submittedUsername]);
@@ -155,7 +155,7 @@ export default function HomePage() {
         }
         if (filters.sortBy === 'updated') {
           // Fallback parsing placeholder logic for date structures if integrated later
-          return b.id - a.id; 
+          return b.id - a.id;
         }
         // Default default sort sequence: Highest Stars (Descending)
         return (b.stargazers_count ?? 0) - (a.stargazers_count ?? 0);
@@ -165,10 +165,10 @@ export default function HomePage() {
   let mainContent;
   switch (true) {
     case status === 'loading' && repos.length === 0:
-      mainContent = <LoadingSpinner />
+      mainContent = <LoadingSpinner />;
       break;
     case status === 'error':
-      mainContent = <ErrorBanner message={errorMessage} />
+      mainContent = <ErrorBanner message={errorMessage} />;
       break;
     default:
       if (displayedRepos.length > 0) {

@@ -3,7 +3,7 @@ export type EmptyStateProps = {
 }
 
 export default function EmptyState({ message }: EmptyStateProps) {
-  return (<div className="p-4 mb-4 text-sm bg-[#161e2e] text-slate-200 rounded-xl" role="alert">
+  return (<div className="p-4 mb-4 text-sm bg-[var(--bg-elevated-2)] text-[var(--text-primary)] rounded-xl" role="alert">
     {message || 'No repos match your search.'}
   </div>)
 }

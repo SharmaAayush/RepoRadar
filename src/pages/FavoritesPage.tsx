@@ -27,24 +27,24 @@ export default function FavoritesPage() {
     <div className="flex items-center justify-between">
       <button
         onClick={() => navigate('/')}
-        className="flex items-center gap-2 text-sm text-[#58a6ff] hover:underline focus:outline-none transition group"
+        className="flex items-center gap-2 text-sm text-[var(--accent)] hover:underline focus:outline-none transition group"
       >
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
         <span>Back to search dashboard</span>
       </button>
 
-      <div className="flex items-center gap-2 text-xs text-[#8b949e] bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d]">
-        <span className="text-[#f85149]"><Heart className="inline relative top-[-2px] ml-1 w-4 h-4 fill-[#f85149]" /></span>
-        <span>Saved items: <strong className="text-[#f0f6fc]">{favorites.length}</strong></span>
+      <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] px-3 py-1.5 rounded-full border border-[var(--border)]">
+        <span className="text-[var(--red)]"><Heart className="inline relative top-[-2px] ml-1 w-4 h-4 fill-[var(--red)]" /></span>
+        <span>Saved items: <strong className="text-[var(--text-primary)]">{favorites.length}</strong></span>
       </div>
     </div>
 
     {/* Dynamic Title Context Head */}
     <div className="space-y-1">
-      <h1 className="text-2xl font-bold tracking-tight text-[#f0f6fc]">
+      <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
         Your Favorited Repositories
       </h1>
-      <p className="text-xs text-[#8b949e]">
+      <p className="text-xs text-[var(--text-secondary)]">
         Fresh metrics for your bookmarked exploration workspaces.
       </p>
     </div>
@@ -64,7 +64,7 @@ export default function FavoritesPage() {
             <button
               type="button"
               onClick={() => handleRemoveFavorite(repo.full_name)}
-              className="h-8 px-2.5 flex items-center gap-1.5 text-xs font-medium rounded-lg bg-[#21262d] text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-[#30363d] hover:border-red-500/20 transition shadow-md"
+              className="h-8 px-2.5 flex items-center gap-1.5 text-xs font-medium rounded-lg bg-[var(--bg-elevated-5)] text-[var(--text-secondary)] hover:text-[var(--red)] hover:bg-[var(--red-subtle)] border border-[var(--border)] hover:border-[var(--red)]/20 transition shadow-md"
               title="Remove from favorites list"
             >
               <Trash2 className="w-3.5 h-3.5" />

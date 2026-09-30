@@ -10,7 +10,7 @@ export default function ToggleTheme() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="h-9 w-9 flex items-center justify-center rounded-xl bg-[#1e293b] hover:bg-[#253347] border border-slate-800 text-slate-400 hover:text-slate-200 shadow-sm focus:outline-none transition group relative overflow-hidden"
+      className="h-9 w-9 flex items-center justify-center rounded-xl bg-[var(--bg-elevated-3)] hover:bg-[var(--bg-elevated-6)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-sm focus:outline-none transition group relative overflow-hidden"
       title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
       {/* Sun Icon Vector: Rotates, scales down, and disappears downward if dark mode is selected */}
