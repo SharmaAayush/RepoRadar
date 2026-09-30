@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import Logo from "./Logo";
 import GithubTokenInput from "./GithubTokenInput";
+import ToggleTheme from "./ToggleTheme";
 
 export default function Header() {
   return (
@@ -9,7 +10,13 @@ export default function Header() {
         <Link to="/">
           <Logo />
         </Link>
-        <GithubTokenInput />
+
+
+        {/* Right Side: Interactive Action Control Array */}
+        <div className="flex items-center gap-4">
+          <ToggleTheme />
+          <GithubTokenInput />
+        </div>
       </div>
     </header>
   )
