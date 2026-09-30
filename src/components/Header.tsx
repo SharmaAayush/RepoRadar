@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import Logo from "./Logo";
 import GithubTokenInput from "./GithubTokenInput";
 import ToggleTheme from "./ToggleTheme";
+import Auth from "./Auth";
 
 export default function Header() {
   return (
@@ -15,6 +16,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <ToggleTheme />
           <GithubTokenInput />
+          <Auth />
         </div>
       </div>
     </header>
