@@ -2,9 +2,10 @@ import { useSearchParams } from "react-router"
 import ErrorBanner from "../components/ErrorBanner";
 import { useEffect, useState } from "react";
 import type { GitHubRepository } from "../types/github-api-response";
-import { getRepoDetails } from "../helpers/github.api";
+import { getRepoDetails } from "../api/github.client";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { AlertCircle, ArrowLeft, BarChart2, Calendar, Code, GitFork, Shield, Star } from "lucide-react";
+import type { AxiosError } from "axios";
 
 export default function ComparePage() {
   const [searchParams] = useSearchParams();
@@ -35,13 +36,13 @@ export default function ComparePage() {
               );
             }
             const results = await Promise.all(promises);
-            const repos = await Promise.all(results.map(res => res.json()));
+            const repos = results.map(res => res.data);
             setRepos(repos);
             setStatus('success');
           } catch (error) {
-            if (error === 404) {
+            if ((error as AxiosError).status === 404) {
               setErrorMessage('Repo not found — check the username and repo name and try again.');
-            } else if (error === 403) {
+            } else if ((error as AxiosError).status === 403) {
               setErrorMessage('Rate limited by GitHub — try again after some time.');
             } else {
               setErrorMessage('Something went wrong - try again after some time.');

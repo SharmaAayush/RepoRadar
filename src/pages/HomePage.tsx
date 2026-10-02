@@ -5,10 +5,10 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import RepoCard from "../components/RepoCard";
 import SearchBar from "../components/SearchBar";
 import APP_CONFIG from "../config/app.config";
-import { getRepoDetails, getUserRepos } from "../helpers/github.api";
-import type { ListRepositoriesForUserResponse } from "../types/github-api-response";
+import { getRepoDetails, getUserRepos } from "../api/github.client";
 import type { Repo } from "../types/repo";
 import type { FilterValues } from "../helpers/filter.helper";
+import axios from "axios";
 
 export default function HomePage() {
   const [submittedUsername, setSubmittedUsername] = useState('');
@@ -71,11 +71,7 @@ export default function HomePage() {
         setStatus('loading');
 
         try {
-          const resultPromise = await getUserRepos(submittedUsername, page);
-          if (!resultPromise.ok) {
-            throw resultPromise.status;
-          }
-          const result: ListRepositoriesForUserResponse = await resultPromise.json();
+          const { data: result } = await getUserRepos(submittedUsername, page);
           setHasMore(result.length === APP_CONFIG.REPOS_PER_PAGE);
           const repos = result.map((repo) => {
             const typedRepo: Repo = {
@@ -92,12 +88,16 @@ export default function HomePage() {
           setStatus('success');
         } catch (error) {
           setStatus('error');
-          if (error === 404) {
-            setErrorMessage('User not found — check the username and try again.');
-          } else if (error === 403) {
-            setErrorMessage('Rate limited by GitHub — try again after some time.');
-          } else if (error === 401) {
-            setErrorMessage('Unauthorized error — try removing GitHub token if set.')
+          if (axios.isAxiosError(error)) {
+            if (error.status === 404) {
+              setErrorMessage('User not found — check the username and try again.');
+            } else if (error.status === 403) {
+              setErrorMessage('Rate limited by GitHub — try again after some time.');
+            } else if (error.status === 401) {
+              setErrorMessage('Unauthorized error — try removing GitHub token if set.')
+            }
+          } else {
+            setErrorMessage('Something went wrong - try again after some time.');
           }
         }
       }, 50);
@@ -118,8 +118,7 @@ export default function HomePage() {
         try {
           const resultPromises = repos.map(repo => getRepoDetails(submittedUsername, repo.full_name));
           const results = await Promise.all(resultPromises);
-          const jsonResultPromises = results.map(res => res.json());
-          const jsonResults = await Promise.all(jsonResultPromises);
+          const jsonResults = results.map(res => res.data);
           const updatedRepos = [...repos];
           jsonResults.forEach((res, index) => {
             const repo = updatedRepos[index];

@@ -1,4 +1,4 @@
-import { getRepoDetails } from "../helpers/github.api";
+import { getRepoDetails } from "../api/github.client";
 import { useFavoritesStore } from "../store/favoritesStore";
 import type { Repo } from "../types/repo";
 
@@ -13,7 +13,7 @@ export async function favoritesLoader() {
     const [owner, name] = fullName.split('/');
     return getRepoDetails(owner, name);
   }));
-  const favoriteRepos = await Promise.all(responses.map(res => res.json()));
+  const favoriteRepos = responses.map(res => res.data);
   const repos: Repo[] = favoriteRepos.map((repo, index) => ({
     id: repo.id,
     description: repo.description,
