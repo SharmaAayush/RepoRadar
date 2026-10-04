@@ -1,24 +1,39 @@
-import { useLoaderData, useNavigate } from "react-router"
-import type { favoritesLoader } from "../loaders/favoritesLoader";
+import { useNavigate } from "react-router"
 import { ArrowLeft, Heart, Trash2 } from "lucide-react";
 import RepoCard from "../components/RepoCard";
 import { useFavoritesStore } from "../store/favoritesStore";
-import { useEffect, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
+import { createGetRepoDetails } from "../api/github/github.queryOptions";
+import type { Repo } from "../types/repo";
 
 export default function FavoritesPage() {
-  const {favorites, toggleFavorite} = useFavoritesStore(state => state);
-  const { favoriteRepos } = useLoaderData<typeof favoritesLoader>();
-  const [repos, setRepos] = useState(favoriteRepos);
+  const { favorites, toggleFavorite } = useFavoritesStore(state => state);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    (() => {
-      setRepos(prevRepos => prevRepos.filter(repo => favorites.includes(repo.full_name)))
-    })();
-  }, [favorites])
+  const favoriteReposResult = useQueries({
+    queries: favorites.map(fullName => {
+      const [owner, name] = fullName.split('/');
+      return {
+        ...createGetRepoDetails(owner, name),
+      }
+    })
+  });
+
+  const repos = favoriteReposResult
+    .map<Repo>((res, index) => {
+      const repo = res.data?.data;
+      return {
+        id: repo?.id ?? 0,
+        description: repo?.description ?? '',
+        forks_count: repo?.forks_count ?? 0,
+        stargazers_count: repo?.stargazers_count ?? 0,
+        language: repo?.language ?? '',
+        full_name: favorites[index],
+      }
+    })
+    .filter(data => !!data.id);
 
   function handleRemoveFavorite(fullname: string) {
-    setRepos(prevRepos => prevRepos.filter(repo => repo.full_name !== fullname));
     toggleFavorite(fullname);
   }
 
@@ -56,7 +71,7 @@ export default function FavoritesPage() {
           {/* Standard Repo Card Base Element */}
           <RepoCard
             {...repo}
-            // onFavorite={() => handleRemoveFavorite(repo.full_name)}
+          // onFavorite={() => handleRemoveFavorite(repo.full_name)}
           />
 
           {/* Styled Quick Remove overlay Button placed inside the visual layout space */}

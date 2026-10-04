@@ -5,6 +5,7 @@ import * as z from 'zod';
 import { RotateCcw } from 'lucide-react';
 import type { Repo } from '../types/repo';
 import { filterSchema, type FilterValues } from '../helpers/filter.helper';
+import type { ReposSortByOptions } from '../api/github/github.client';
 
 interface FilterFormProps {
   loadedRepos: Repo[];
@@ -32,7 +33,14 @@ export default function FilterForm({ loadedRepos, currentFilters, onApply, onRes
     defaultValues: currentFilters,
   });
 
-  const defaultParameters: FilterValues = { minStars: 0, language: 'All', sortBy: 'stars' };
+  const defaultParameters: FilterValues = { minStars: 0, language: 'All', sortBy: 'full_name' };
+
+  const sortOptions: { value: ReposSortByOptions; label: string }[] = [
+    { value: 'created', label: 'Created At' },
+    { value: 'updated', label: 'Updated At' },
+    { value: 'pushed', label: 'Recently Updated' },
+    { value: 'full_name', label: 'Name' },
+  ]
 
   return (
     <form onSubmit={handleSubmit(onApply)} className="space-y-4">
@@ -80,9 +88,9 @@ export default function FilterForm({ loadedRepos, currentFilters, onApply, onRes
           {...register('sortBy')}
           className="w-full h-9 px-2 bg-[var(--bg-elevated)] text-[var(--text-primary)] text-sm rounded-lg border border-[var(--border)] focus:outline-none focus:border-[var(--border-strong)] cursor-pointer"
         >
-          <option value="stars">Highest Stars</option>
-          <option value="forks">Most Forks</option>
-          <option value="updated">Recently Updated</option>
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
         </select>
       </div>
 

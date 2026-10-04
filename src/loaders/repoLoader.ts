@@ -1,5 +1,6 @@
 import type { Params } from "react-router";
-import { getRepoDetails, getRepoLanguages, getRepoReadme } from "../api/github.client";
+import { createGetRepoDetails, createGetRepoLanguages, createGetRepoReadme } from "../api/github/github.queryOptions";
+import { queryClient } from "../api/query.client";
 
 export type RepoLoaderParams = {
   params: Params
@@ -12,18 +13,11 @@ export async function repoLoader({ params }: RepoLoaderParams) {
     throw 'Owner or Repo name missing';
   }
 
-  const results = await Promise.all([
-    getRepoDetails(owner, name),
-    getRepoLanguages(owner, name),
-    getRepoReadme(owner, name),
+  await Promise.all([
+    queryClient.query({ ...createGetRepoDetails(owner, name), staleTime: 'static' }),
+    queryClient.query({ ...createGetRepoLanguages(owner, name), staleTime: 'static' }),
+    queryClient.query({ ...createGetRepoReadme(owner, name), staleTime: 'static' }),
   ]);
 
-  const [{ data: repo }, { data: languages }, { data: readmeRes }] = results;
-  const readme = atob(readmeRes.content);
-  const languagesEntries = Object.entries(languages);
-  return {
-    repo,
-    languages: languagesEntries,
-    readme,
-  }
+  return { owner, name};
 }

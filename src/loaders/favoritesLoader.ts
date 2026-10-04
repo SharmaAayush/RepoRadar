@@ -1,6 +1,6 @@
-import { getRepoDetails } from "../api/github.client";
+import { createGetRepoDetails } from "../api/github/github.queryOptions";
+import { queryClient } from "../api/query.client";
 import { useFavoritesStore } from "../store/favoritesStore";
-import type { Repo } from "../types/repo";
 
 export async function favoritesLoader() {
   const favorites = useFavoritesStore.getState().favorites;
@@ -9,20 +9,15 @@ export async function favoritesLoader() {
     throw 'No repos marked as favorites';
   }
 
-  const responses = await Promise.all(favorites.map(fullName => {
+  await Promise.all(favorites.map(fullName => {
     const [owner, name] = fullName.split('/');
-    return getRepoDetails(owner, name);
+    return queryClient.query({
+      ...createGetRepoDetails(owner, name),
+      staleTime: 'static',
+    })
   }));
-  const favoriteRepos = responses.map(res => res.data);
-  const repos: Repo[] = favoriteRepos.map((repo, index) => ({
-    id: repo.id,
-    description: repo.description,
-    forks_count: repo.forks_count,
-    stargazers_count: repo.stargazers_count,
-    language: repo.language,
-    full_name: favorites[index],
-  }))
+
   return {
-    favoriteRepos: repos,
+    favorites,
   }
 }

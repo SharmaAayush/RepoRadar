@@ -1,73 +1,59 @@
 import { useSearchParams } from "react-router"
 import ErrorBanner from "../components/ErrorBanner";
-import { useEffect, useState } from "react";
-import type { GitHubRepository } from "../types/github-api-response";
-import { getRepoDetails } from "../api/github.client";
+import { useEffect, useMemo, useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { AlertCircle, ArrowLeft, BarChart2, Calendar, Code, GitFork, Shield, Star } from "lucide-react";
-import type { AxiosError } from "axios";
+import axios, { type AxiosError } from "axios";
+import { useQueries } from "@tanstack/react-query";
+import { createGetRepoDetails } from "../api/github/github.queryOptions";
 
 export default function ComparePage() {
   const [searchParams] = useSearchParams();
-  const [repos, setRepos] = useState<GitHubRepository[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  useEffect(() => {
+  // Parse repo names from query parameters
+  const repoNames = useMemo(() => {
     const reposParam = searchParams.get('repos');
-    const repoNames = reposParam?.split(',').map((name) => name.trim()).filter(Boolean);
-
-    let timeout: ReturnType<typeof setTimeout>;
-    (() => {
-      if (!reposParam) {
-        setStatus('error');
-        setErrorMessage('No repositories selected for comparison. Please provide the ?repos= query parameter.');
-        return;
-      }
-      if (repoNames && repoNames.length > 0) {
-        timeout = setTimeout(async () => {
-          try {
-            setStatus('loading');
-            const promises = [];
-            for (const repo of repoNames) {
-              const [owner, name] = repo.split('/');
-              promises.push(
-                getRepoDetails(owner, name),
-              );
-            }
-            const results = await Promise.all(promises);
-            const repos = results.map(res => res.data);
-            setRepos(repos);
-            setStatus('success');
-          } catch (error) {
-            if ((error as AxiosError).status === 404) {
-              setErrorMessage('Repo not found — check the username and repo name and try again.');
-            } else if ((error as AxiosError).status === 403) {
-              setErrorMessage('Rate limited by GitHub — try again after some time.');
-            } else {
-              setErrorMessage('Something went wrong - try again after some time.');
-            }
-            setStatus('error');
-          }
-        }, 50);
-      } else {
-        setStatus('error');
-        setErrorMessage('Repository comparison parameter list is empty.')
-      }
-    })()
-
-    return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-    }
+    if (!reposParam) return [];
+    return reposParam.split(',').map((name) => name.trim()).filter(Boolean);
   }, [searchParams]);
 
-  if (status === 'error') {
+  const repoQueries = useQueries({
+    queries: repoNames.map(repo => {
+      const [owner, name] = repo.split('/');
+      return {
+        ...createGetRepoDetails(owner, name),
+        enabled: Boolean(owner && name),
+      };
+    })
+  });
+
+  const isLoading = repoQueries.some((query) => query.isLoading);
+  const error = repoQueries.find((query) => query.isError)?.error ?? null;
+
+  useEffect(() => {
+    (() => {
+      if (!searchParams.get('repos')) {
+        setErrorMessage('No repositories selected for comparison. Please provide the ?repos= query parameter.');
+      } else if (!repoNames || repoNames.length === 0) {
+        setErrorMessage('Repository comparison parameter list is empty.')
+      } else if (error && axios.isAxiosError(error)) {
+        if ((error as AxiosError).status === 404) {
+          setErrorMessage('Repo not found — check the username and repo name and try again.');
+        } else if ((error as AxiosError).status === 403) {
+          setErrorMessage('Rate limited by GitHub — try again after some time.');
+        }
+      } else {
+        setErrorMessage('');
+      }
+    })();
+  }, [error, searchParams, repoNames]);
+
+  if (errorMessage) {
     return <ErrorBanner message={errorMessage} />
   }
 
-  if (status === 'loading') {
+  if (isLoading) {
     return <LoadingSpinner />
   }
 
@@ -81,6 +67,10 @@ export default function ComparePage() {
       day: 'numeric',
     });
   };
+
+  const repos = repoQueries
+    .map(res => res.data?.data)
+    .filter(repo => !!repo);
 
   return (<>
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] p-8 font-sans antialiased selection:bg-[var(--accent)]/30">
@@ -125,82 +115,83 @@ export default function ComparePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]/60 text-sm font-medium">
-                {repos.map((repo) => (
-                  <tr
-                    key={repo.id}
-                    className="hover:bg-[var(--bg-elevated-5)]/30 transition-colors duration-150"
-                  >
-                    {/* Column 1: Repo Target Avatar Identity Label (External Link) */}
-                    <td className="py-4 px-5 font-semibold text-[var(--text-primary)] whitespace-nowrap">
-                      <a
-                        href={`https://github.com/${repo.full_name}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 hover:text-[var(--accent)] focus:text-[var(--accent)] group outline-none transition"
-                      >
-                        <img
-                          src={repo.owner.avatar_url}
-                          alt={`${repo.full_name} profile avatar icon`}
-                          className="w-6 h-6 rounded-md bg-[var(--border)]"
-                        />
-                        <span className="underline decoration-transparent group-hover:decoration-[var(--accent)] transition">
-                          {repo.full_name}
+                {repos
+                  .map((repo) => (
+                    <tr
+                      key={repo.id}
+                      className="hover:bg-[var(--bg-elevated-5)]/30 transition-colors duration-150"
+                    >
+                      {/* Column 1: Repo Target Avatar Identity Label (External Link) */}
+                      <td className="py-4 px-5 font-semibold text-[var(--text-primary)] whitespace-nowrap">
+                        <a
+                          href={`https://github.com/${repo.full_name}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 hover:text-[var(--accent)] focus:text-[var(--accent)] group outline-none transition"
+                        >
+                          <img
+                            src={repo.owner.avatar_url}
+                            alt={`${repo.full_name} profile avatar icon`}
+                            className="w-6 h-6 rounded-md bg-[var(--border)]"
+                          />
+                          <span className="underline decoration-transparent group-hover:decoration-[var(--accent)] transition">
+                            {repo.full_name}
+                          </span>
+                        </a>
+                      </td>
+
+                      {/* Column 2: Stars Performance Counter */}
+                      <td className="py-4 px-4 text-center whitespace-nowrap text-[var(--text-primary)]">
+                        <div className="inline-flex items-center gap-1.5 justify-center">
+                          <Star className="w-3.5 h-3.5 text-[var(--yellow)] fill-[var(--yellow)]" />
+                          <span>{repo.stargazers_count.toLocaleString()}</span>
+                        </div>
+                      </td>
+
+                      {/* Column 3: Forks Cluster Count */}
+                      <td className="py-4 px-4 text-center whitespace-nowrap text-[var(--text-muted)]">
+                        <div className="inline-flex items-center gap-1.5 justify-center">
+                          <GitFork className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
+                          <span>{repo.forks_count.toLocaleString()}</span>
+                        </div>
+                      </td>
+
+                      {/* Column 4: Open Issues Target Tracking Count */}
+                      <td className="py-4 px-4 text-center whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${repo.open_issues_count > 1000
+                          ? 'bg-[var(--red-subtle)] text-[var(--red)]'
+                          : 'bg-[var(--green-subtle)] text-[var(--green)]'
+                          }`}>
+                          <AlertCircle className="w-3 h-3" />
+                          {repo.open_issues_count.toLocaleString()}
                         </span>
-                      </a>
-                    </td>
+                      </td>
 
-                    {/* Column 2: Stars Performance Counter */}
-                    <td className="py-4 px-4 text-center whitespace-nowrap text-[var(--text-primary)]">
-                      <div className="inline-flex items-center gap-1.5 justify-center">
-                        <Star className="w-3.5 h-3.5 text-[var(--yellow)] fill-[var(--yellow)]" />
-                        <span>{repo.stargazers_count.toLocaleString()}</span>
-                      </div>
-                    </td>
+                      {/* Column 5: Predominant Language Base Node tag */}
+                      <td className="py-4 px-5 whitespace-nowrap text-[var(--text-muted)]">
+                        <div className="flex items-center gap-2">
+                          <Code className="w-3.5 h-3.5 text-[var(--accent)]" />
+                          <span>{repo.language || 'Unknown'}</span>
+                        </div>
+                      </td>
 
-                    {/* Column 3: Forks Cluster Count */}
-                    <td className="py-4 px-4 text-center whitespace-nowrap text-[var(--text-muted)]">
-                      <div className="inline-flex items-center gap-1.5 justify-center">
-                        <GitFork className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
-                        <span>{repo.forks_count.toLocaleString()}</span>
-                      </div>
-                    </td>
+                      {/* Column 6: Registered License Legal Guard Struct */}
+                      <td className="py-4 px-5 text-[var(--text-secondary)] whitespace-nowrap max-w-[160px] truncate">
+                        <div className="flex items-center gap-2" title={(repo.license as Record<string, string>)?.name || 'Unlicensed'}>
+                          <Shield className="w-3.5 h-3.5 shrink-0" />
+                          <span>{(repo.license as Record<string, string>)?.name || 'None'}</span>
+                        </div>
+                      </td>
 
-                    {/* Column 4: Open Issues Target Tracking Count */}
-                    <td className="py-4 px-4 text-center whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${repo.open_issues_count > 1000
-                        ? 'bg-[var(--red-subtle)] text-[var(--red)]'
-                        : 'bg-[var(--green-subtle)] text-[var(--green)]'
-                        }`}>
-                        <AlertCircle className="w-3 h-3" />
-                        {repo.open_issues_count.toLocaleString()}
-                      </span>
-                    </td>
-
-                    {/* Column 5: Predominant Language Base Node tag */}
-                    <td className="py-4 px-5 whitespace-nowrap text-[var(--text-muted)]">
-                      <div className="flex items-center gap-2">
-                        <Code className="w-3.5 h-3.5 text-[var(--accent)]" />
-                        <span>{repo.language || 'Unknown'}</span>
-                      </div>
-                    </td>
-
-                    {/* Column 6: Registered License Legal Guard Struct */}
-                    <td className="py-4 px-5 text-[var(--text-secondary)] whitespace-nowrap max-w-[160px] truncate">
-                      <div className="flex items-center gap-2" title={(repo.license as Record<string, string>)?.name || 'Unlicensed'}>
-                        <Shield className="w-3.5 h-3.5 shrink-0" />
-                        <span>{(repo.license as Record<string, string>)?.name || 'None'}</span>
-                      </div>
-                    </td>
-
-                    {/* Column 7: System Last Updated Entry Logs */}
-                    <td className="py-4 px-5 text-[var(--text-secondary)] whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>{formatDate(repo.updated_at)}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      {/* Column 7: System Last Updated Entry Logs */}
+                      <td className="py-4 px-5 text-[var(--text-secondary)] whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{formatDate(repo.updated_at)}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

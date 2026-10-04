@@ -1,7 +1,9 @@
 import axios, { type AxiosResponse } from 'axios';
-import { useGithubTokenStore } from '../store/githubTokenStore';
-import type { GetRepositoryLanguagesResponse, GetRepositoryReadmeResponse, GitHubRepository, ListRepositoriesForUserResponse } from '../types/github-api-response';
-import APP_CONFIG from '../config/app.config';
+import { useGithubTokenStore } from '../../store/githubTokenStore';
+import type { GetRepositoryLanguagesResponse, GetRepositoryReadmeResponse, GitHubRepository, ListRepositoriesForUserResponse } from '../../types/github-api-response';
+import APP_CONFIG from '../../config/app.config';
+
+export type ReposSortByOptions = 'created' | 'updated' | 'pushed' | 'full_name';
 
 const githubClient = axios.create({
   baseURL: 'https://api.github.com',
@@ -40,7 +42,7 @@ githubClient.interceptors.response.use(
 export async function getUserRepos(
   userName: string,
   page = 1,
-  sortBy = 'stars',
+  sortBy: ReposSortByOptions = 'full_name',
 ): Promise<AxiosResponse<ListRepositoriesForUserResponse>> {
   return await githubClient.get(`/users/${userName}/repos`, {
     params: {

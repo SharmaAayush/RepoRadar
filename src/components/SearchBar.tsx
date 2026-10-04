@@ -19,7 +19,7 @@ export default function SearchBar({ onSubmit, selected, loadedRepos, onClearSele
   const [activeFilters, setActiveFilters] = useState<FilterValues>({
     minStars: 0,
     language: 'All',
-    sortBy: 'stars',
+    sortBy: 'full_name',
   });
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +34,7 @@ export default function SearchBar({ onSubmit, selected, loadedRepos, onClearSele
     let count = 0;
     if (activeFilters.minStars > 0) count++;
     if (activeFilters.language !== 'All') count++;
-    if (activeFilters.sortBy !== 'stars') count++;
+    if (activeFilters.sortBy !== 'full_name') count++;
     return count;
   }, [activeFilters]);
 

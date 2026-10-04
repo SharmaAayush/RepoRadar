@@ -1,12 +1,63 @@
-import { useLoaderData, useParams } from "react-router"
+import { useParams } from "react-router"
 import Markdown from 'react-markdown';
 import { AlertCircle, GitFork, Star } from "lucide-react";
 import { LANGUAGE_COLOR_MAP } from "../consts/language-colors";
-import type { repoLoader } from "../loaders/repoLoader";
+import { useQuery } from "@tanstack/react-query";
+import { createGetRepoDetails, createGetRepoLanguages, createGetRepoReadme } from "../api/github/github.queryOptions";
+import ErrorBanner from "../components/ErrorBanner";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+const decodeBase64Unicode = (base64String: string) => {
+  try {
+    return decodeURIComponent(
+      atob(base64String)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+  } catch {
+    return atob(base64String);
+  }
+};
 
 export default function RepoDetailPage() {
-  const { repo, languages, readme } = useLoaderData<typeof repoLoader>();
   const { owner, name } = useParams();
+
+  const isParamValid = Boolean(owner && name);
+
+  const repoQuery = useQuery({
+    ...createGetRepoDetails(owner as string, name as string),
+    enabled: !!owner && !!name,
+  });
+  const languagesQuery = useQuery({
+    ...createGetRepoLanguages(owner as string, name as string),
+    enabled: !!owner && !!name,
+  });
+  const readmeQuery = useQuery({
+    ...createGetRepoReadme(owner as string, name as string),
+    enabled: !!owner && !!name,
+  });
+  
+  if (!isParamValid) {
+    return <ErrorBanner message="Owner name or repo name is missing" />;
+  }
+
+  if (repoQuery.isLoading || languagesQuery.isLoading || readmeQuery.isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  // Handle error states cleanly
+  if (repoQuery.isError || languagesQuery.isError) {
+    return <ErrorBanner message="Something went wrong while fetching repo data - please try again later." />;
+  }
+
+  const repo = repoQuery.data?.data;
+  const languagesData = languagesQuery.data?.data ?? {};
+  const languages = Object.entries(languagesData);
+
+  // Readme might be missing (404 if repo has no README), handle gracefully
+  const readmeContent = readmeQuery.data?.data?.content;
+  const readme = readmeContent ? decodeBase64Unicode(readmeContent) : '';
 
   const languagesTotal = languages ? languages.reduce((accumulator, current) => accumulator + current[1], 0) : 0;
   const languagesMap = (languages || []).map(lan => {
@@ -58,7 +109,7 @@ export default function RepoDetailPage() {
               {languagesMap.map(language => {
                 return <div
                   key={language.name}
-                  className={`h-full bg-[${language.color}]`}
+                  className={`h-full`}
                   style={{ width: `${language.percentage}%`, backgroundColor: language.color }}
                   title={`${language.name}: ${language.percentage}%`}
                 />
@@ -69,7 +120,7 @@ export default function RepoDetailPage() {
             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs font-medium">
               {languagesMap.map(language => {
                 return <div key={language.name} className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full bg-[${language.color}]`} style={{ backgroundColor: language.color }} />
+                  <span className={`w-2.5 h-2.5 rounded-full`} style={{ backgroundColor: language.color }} />
                   <span className="text-[var(--text-primary)]">{language.name} <span className="text-[var(--text-secondary)] font-normal">{language.percentage}%</span></span>
                 </div>
               })}
