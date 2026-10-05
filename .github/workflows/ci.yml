@@ -32,5 +32,8 @@ jobs:
       - name: Run lint
         run: npm run lint
 
+      - name: Run tests
+        run: npm run test
+
       - name: Verify build output
         run: test -d dist && ls -la dist
