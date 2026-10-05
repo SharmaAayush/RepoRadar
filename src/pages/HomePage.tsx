@@ -109,6 +109,12 @@ export default function HomePage() {
     return ERROR_MESSAGES.DEFAULT_API_ERROR;
   }, [error]);
 
+  const onSelectionChangeHandler = useCallback((fullName: string, checked: boolean) => {
+    setSelected((prev) =>
+      checked ? [...prev, fullName] : prev.filter((name) => name !== fullName)
+    );
+  }, [])
+
   return (
     <>
       <SearchBar
@@ -132,11 +138,7 @@ export default function HomePage() {
             {displayedRepos.map((repo) => (
               <RepoCard
                 key={repo.id}
-                onSelectionChange={(fullName, checked) => {
-                  setSelected((prev) =>
-                    checked ? [...prev, fullName] : prev.filter((name) => name !== fullName)
-                  );
-                }}
+                onSelectionChange={onSelectionChangeHandler}
                 selected={selected}
                 {...repo}
               />

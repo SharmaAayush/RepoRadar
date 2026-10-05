@@ -2,11 +2,11 @@ import { Link } from "react-router";
 import { LANGUAGE_COLOR_MAP } from "../consts/language-colors";
 import type { RepoCardProps } from "../types/repo";
 import { ExternalLink, GitFork, Heart, Star } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import APP_CONFIG from "../config/app.config";
 import { useFavoritesStore } from "../store/favoritesStore";
 
-export default function RepoCard({
+const RepoCard = React.memo(function RepoCard({
   id,
   full_name,
   description,
@@ -114,4 +114,6 @@ export default function RepoCard({
       </div>
     </div>
   )
-}
+})
+
+export default RepoCard;
